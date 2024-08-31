@@ -1,4 +1,5 @@
 ﻿Voici les règles d'un mini-jeu de waven d'aout 2024 :
+
 j'ai une grille de 8 par 8 au départ on a un bloc de pierre au milieux et sur les 4 points diagonaux à ce bloc on a un tofu, on peut faire une action "taper" il en a 7 au départ il peut utiliser cette action pour :
 taper un bloc de pierre 
 taper un tofu

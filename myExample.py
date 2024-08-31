@@ -10,6 +10,7 @@ class SimpleGame:
         self.super_actions = 0  # Starting with 0 "super taper" actions
         self.points = 0
         self.super_actions_used_correctly =0
+        self.super_actions_added = 0
 
         # Placing the stone block in the center
         self.grid[grid_size // 2, grid_size // 2] = 'S'
@@ -35,13 +36,16 @@ class SimpleGame:
                 possible_positions.append((new_x, new_y))
         return possible_positions
 
+    def is_possible_to_add_action(self):
+        return self.actions + self.super_actions < 8
     def hit(self, x, y):
         if not self.is_valid_position(x, y) or self.grid[x, y] not in ['S', 'T']:
             return False  # Invalid hit
 
         if self.grid[x, y] == 'S':
             # Hit a stone block
-            self.super_actions += 1
+            if self.is_possible_to_add_action() : 
+                self.super_actions += 1
             new_blocks = self.get_possible_adjacent_positions(x, y)
             for pos in random.sample(new_blocks, min(3, len(new_blocks))):
                 self.grid[pos] = 'S'
@@ -63,18 +67,25 @@ class SimpleGame:
         
         positions_to_hit = [(x, y), (x - 1, y), (x, y - 1), (x + 1, y), (x, y + 1)]
         hit_count = 0
-
+        super_action_to_add = 0
         for pos in positions_to_hit:
             if self.is_valid_position(*pos) and self.grid[pos] in ['S', 'T']:
-                if(self.grid[pos] == 'S'):
-                    self.points += 100
+                if self.grid[pos] == 'T':
+                    self.points += 400
+                if self.grid[pos] == 'S' and self.is_possible_to_add_action() : 
+                    super_action_to_add +=1     
                 self.grid[pos] = '0'
                 hit_count += 1
         
-        if hit_count == 5:
+        if hit_count == 5 and self.is_possible_to_add_action() :
             self.actions += 2
             self.super_actions_used_correctly +=1
         
+        for i in range(super_action_to_add):
+            if self.is_possible_to_add_action():
+                self.super_actions+=1
+                self.super_actions_added+=1
+
         self.super_actions -= 1
         return True
 
@@ -106,7 +117,7 @@ class SimpleGame:
         SA_Reward=0
         if self.super_actions_used_correctly > 0:
             SA_Reward = self.super_actions_used_correctly * 10000
-        base_reward = self.points 
+        base_reward = self.points  
         return base_reward + SA_Reward
 
     def copy(self,x,y,action="A"):
@@ -126,12 +137,13 @@ def play_game():
     tree = MCTS()
     game = SimpleGame()
     round = 0
+    print("Round num :",round,"\n Points  : ",game.points,' || Actions : ',game.actions," || Super Action : ",game.super_actions, " || Super Action used corretly : ",game.super_actions_used_correctly)
     while (game.actions>0 or game.super_actions>0) and np.any(np.isin(game.grid, ['S', 'T'])):
         round+=1
-        for _ in range(2000):
+        for _ in range(1000):
             tree.do_rollout(game)
-        print("Round num :",round,"\n Points  : ",game.points,' || Actions : ',game.actions," || Super Action : ",game.super_actions, " || Super Action used corretly : ",game.super_actions_used_correctly)
         game = tree.choose(game)
+        print("Round num :",round,"\n Points  : ",game.points,' || Actions : ',game.actions," || Super Action : ",game.super_actions, " || Super Action used corretly : ",game.super_actions_used_correctly, " || super action added ", game.super_actions_added)
     print("Total points : ",game.points)
 
 play_game() 

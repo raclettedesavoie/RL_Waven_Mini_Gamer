@@ -87,6 +87,7 @@ class MCTS:
         log_N_vertex = math.log(self.N[node])
 
         def uct(n):
+            exploration_weight = self.exploration_weight * 0.5
             "Upper confidence bound for trees"
             return self.Q[n] / self.N[n] + self.exploration_weight * math.sqrt(
                 log_N_vertex / self.N[n]
